@@ -1,0 +1,29 @@
+# EAS Build ignore file
+# Exclude unnecessary files from upload to speed up builds
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local env files
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs (will be rebuilt)
+android/app/build/
+android/.gradle/
+android/build/
+ios/build/
+
+# Node modules are handled separately
+# node_modules/

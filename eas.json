@@ -1,0 +1,54 @@
+{
+  "cli": {
+    "version": ">= 16.28.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug",
+        "image": "latest"
+      },
+      "env": {
+        "EXPO_NO_CAPABILITY_SYNC": "1"
+      },
+      "cache": {
+        "key": "development-cache",
+        "paths": ["node_modules", "android/.gradle"]
+      },
+      "prebuildCommand": "echo 'Starting prebuild...'",
+      "postInstallCommand": "chmod +x eas-hooks/*.sh 2>/dev/null || true"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "image": "latest"
+      },
+      "env": {
+        "EXPO_NO_CAPABILITY_SYNC": "1"
+      },
+      "cache": {
+        "key": "preview-cache",
+        "paths": ["node_modules", "android/.gradle"]
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "android": {
+        "buildType": "apk",
+        "image": "latest"
+      },
+      "cache": {
+        "key": "production-cache",
+        "paths": ["node_modules", "android/.gradle"]
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
