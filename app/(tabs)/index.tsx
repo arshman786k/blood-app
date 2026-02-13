@@ -15,7 +15,7 @@ import { useAuthStore } from "@/store/authStore";
 import { uploadImageToCloudinary } from "@/services/cloudinaryService";
 import { saveBloodTest } from "@/services/bloodTestService";
 
-const API_URL = "http://192.168.137.32:5001/api/predict";  // Flask API URL
+const API_URL = "http://192.168.86.57:5001/api/predict";  // Flask API URL
 
 export default function Index() {
   const router = useRouter();

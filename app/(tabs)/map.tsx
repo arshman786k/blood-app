@@ -3,7 +3,7 @@
  * Tab 3: Find nearby blood banks and donation centers
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,9 @@ import {
   Linking,
   Alert,
   Platform,
+  Dimensions,
 } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 // Static blood centers data (Pakistan-specific)
 // You can replace this with Google Places API later
@@ -95,8 +97,18 @@ const BLOOD_CENTERS = [
 export default function MapScreen() {
   const [selectedCity, setSelectedCity] = useState<string>('All');
   const [filteredCenters, setFilteredCenters] = useState(BLOOD_CENTERS);
+  const [selectedCenter, setSelectedCenter] = useState<string | null>(null);
+  const mapRef = useRef<MapView>(null);
 
   const cities = ['All', 'Lahore', 'Karachi', 'Islamabad'];
+
+  // Default region (Pakistan center)
+  const defaultRegion = {
+    latitude: 30.3753,
+    longitude: 69.3451,
+    latitudeDelta: 10,
+    longitudeDelta: 10,
+  };
 
   useEffect(() => {
     if (selectedCity === 'All') {
@@ -107,6 +119,19 @@ export default function MapScreen() {
       );
     }
   }, [selectedCity]);
+
+  const handleMarkerPress = (centerId: string) => {
+    setSelectedCenter(centerId);
+    const center = BLOOD_CENTERS.find((c) => c.id === centerId);
+    if (center && mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: center.coordinates.lat,
+        longitude: center.coordinates.lng,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+    }
+  };
 
   const handleCall = (phone: string) => {
     const phoneNumber = Platform.OS === 'ios' ? `telprompt:${phone}` : `tel:${phone}`;
@@ -171,6 +196,32 @@ export default function MapScreen() {
         ))}
       </ScrollView>
 
+      {/* Map View */}
+      <View style={styles.mapContainer}>
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={defaultRegion}
+          showsUserLocation={true}
+          showsMyLocationButton={true}
+        >
+          {filteredCenters.map((center) => (
+            <Marker
+              key={center.id}
+              coordinate={{
+                latitude: center.coordinates.lat,
+                longitude: center.coordinates.lng,
+              }}
+              title={center.name}
+              description={center.address}
+              pinColor={center.type === 'Hospital' ? '#2196F3' : '#E53935'}
+              onPress={() => handleMarkerPress(center.id)}
+            />
+          ))}
+        </MapView>
+      </View>
+
       {/* Blood Centers List */}
       <ScrollView style={styles.listContainer}>
         {filteredCenters.length === 0 ? (
@@ -180,7 +231,14 @@ export default function MapScreen() {
           </View>
         ) : (
           filteredCenters.map((center) => (
-            <View key={center.id} style={styles.centerCard}>
+            <TouchableOpacity
+              key={center.id}
+              style={[
+                styles.centerCard,
+                selectedCenter === center.id && styles.centerCardSelected,
+              ]}
+              onPress={() => handleMarkerPress(center.id)}
+            >
               {/* Type Badge */}
               <View style={styles.centerHeader}>
                 <View
@@ -241,7 +299,7 @@ export default function MapScreen() {
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            </TouchableOpacity>
           ))
         )}
 
@@ -331,6 +389,16 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  mapContainer: {
+    height: 300,
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
   centerCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -341,6 +409,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+  },
+  centerCardSelected: {
+    borderWidth: 2,
+    borderColor: '#E53935',
+    backgroundColor: '#FFF5F5',
   },
   centerHeader: {
     flexDirection: 'row',
