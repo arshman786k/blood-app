@@ -1,0 +1,194 @@
+/**
+ * Firebase Security Rules
+ * 
+ * IMPORTANT: Copy these rules to your Firebase Console
+ * Go to: Firestore Database > Rules tab > Paste and Publish
+ * 
+ * These rules ensure:
+ * - Users can only read/write their own data
+ * - Admins can read all data
+ * - Proper authentication is required
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is the owner
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // ====================================
+    // USERS COLLECTION
+    // ====================================
+    match /users/{userId} {
+      // Users can read their own profile
+      // Admins can read all profiles
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Users can create their own profile (during signup)
+      allow create: if isOwner(userId);
+      
+      // Users can update their own profile
+      // But cannot change their role (security!)
+      allow update: if isOwner(userId) && 
+                      (!request.resource.data.keys().hasAny(['role']) ||
+                       request.resource.data.role == resource.data.role);
+      
+      // Only admins can delete users
+      allow delete: if isAdmin();
+    }
+    
+    // ====================================
+    // BLOOD TESTS COLLECTION
+    // ====================================
+    match /blood_tests/{testId} {
+      // Users can read their own tests
+      // Admins can read all tests
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      
+      // Users can create tests for themselves
+      allow create: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid;
+      
+      // Users can update their own tests
+      allow update: if isOwner(resource.data.userId);
+      
+      // Only admins can delete tests
+      allow delete: if isAdmin();
+    }
+    
+    // ====================================
+    // DENY ALL OTHER COLLECTIONS
+    // ====================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+/*
+ * TESTING YOUR RULES:
+ * -------------------
+ * 1. Go to Firebase Console > Firestore > Rules
+ * 2. Click "Rules Playground"
+ * 3. Test with different scenarios:
+ *    - Authenticated user reading own data
+ *    - Authenticated user reading other's data
+ *    - Admin reading all data
+ *    - Unauthenticated requests
+ * 
+ * COMMON SCENARIOS:
+ * ----------------
+ * 
+ * Scenario 1: User reads own profile
+ * - Location: /users/abc123
+ * - Auth: Authenticated as abc123
+ * - Result: ALLOWED ✅
+ * 
+ * Scenario 2: User reads another user's profile
+ * - Location: /users/xyz789
+ * - Auth: Authenticated as abc123
+ * - Result: DENIED ❌
+ * 
+ * Scenario 3: Admin reads any profile
+ * - Location: /users/xyz789
+ * - Auth: Authenticated as admin-uid (with role=admin)
+ * - Result: ALLOWED ✅
+ * 
+ * Scenario 4: User creates blood test
+ * - Location: /blood_tests/test123
+ * - Auth: Authenticated as abc123
+ * - Data: { userId: "abc123", ... }
+ * - Result: ALLOWED ✅
+ * 
+ * Scenario 5: User creates test for another user
+ * - Location: /blood_tests/test123
+ * - Auth: Authenticated as abc123
+ * - Data: { userId: "xyz789", ... }
+ * - Result: DENIED ❌
+ * 
+ * PRODUCTION CONSIDERATIONS:
+ * -------------------------
+ * 
+ * 1. Rate Limiting:
+ *    - Consider adding rate limiting for writes
+ *    - Prevent abuse and spam
+ * 
+ * 2. Data Validation:
+ *    - Add field validation
+ *    - Check data types and formats
+ *    - Example:
+ *      request.resource.data.bloodGroup is string &&
+ *      request.resource.data.bloodGroup.matches('[ABO][+-]')
+ * 
+ * 3. Size Limits:
+ *    - Limit document sizes
+ *    - Prevent large data uploads
+ * 
+ * 4. Audit Logging:
+ *    - Enable Firebase Audit Logs
+ *    - Monitor security rule violations
+ * 
+ * ADVANCED RULES (Optional):
+ * --------------------------
+ */
+
+// Example: Add field validation for blood tests
+/*
+match /blood_tests/{testId} {
+  allow create: if isAuthenticated() && 
+                  request.resource.data.userId == request.auth.uid &&
+                  request.resource.data.bloodGroup is string &&
+                  request.resource.data.bloodGroup.matches('[ABO][+-]|AB[+-]') &&
+                  request.resource.data.scores is map &&
+                  request.resource.data.images is map;
+}
+*/
+
+// Example: Prevent users from changing their blood group
+/*
+match /users/{userId} {
+  allow update: if isOwner(userId) && 
+                  // If bloodGroup already exists, don't allow changes
+                  (!resource.data.keys().hasAny(['bloodGroup']) ||
+                   request.resource.data.bloodGroup == resource.data.bloodGroup);
+}
+*/
+
+/*
+ * DEPLOYMENT STEPS:
+ * ----------------
+ * 1. Copy the main rules (lines 10-65)
+ * 2. Go to Firebase Console
+ * 3. Click "Firestore Database" > "Rules"
+ * 4. Replace existing rules
+ * 5. Click "Publish"
+ * 6. Test with Rules Playground
+ * 
+ * IMPORTANT NOTES:
+ * ---------------
+ * ⚠️ These rules are permissive for development
+ * ⚠️ For production, add more validation
+ * ⚠️ Monitor Firebase Usage dashboard
+ * ⚠️ Set up billing alerts
+ * ⚠️ Review security rules regularly
+ * 
+ * FIREBASE DOCUMENTATION:
+ * ----------------------
+ * - Security Rules: https://firebase.google.com/docs/rules
+ * - Rules Language: https://firebase.google.com/docs/rules/rules-language
+ * - Testing Rules: https://firebase.google.com/docs/rules/unit-tests
+ */
