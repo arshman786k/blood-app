@@ -9,13 +9,14 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
 import { uploadImageToCloudinary } from "@/services/cloudinaryService";
 import { saveBloodTest } from "@/services/bloodTestService";
 
-const API_URL = "http://192.168.86.57:5001/api/predict";  // Flask API URL
+const API_URL = "http://192.168.43.170:5001/api/predict";  // Flask API URL
 
 export default function Index() {
   const router = useRouter();
@@ -208,9 +209,10 @@ export default function Index() {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
         <View style={styles.headerIcon}>
           <Text style={styles.headerIconText}>🩸</Text>
         </View>
@@ -269,7 +271,8 @@ export default function Index() {
           </View>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -277,6 +280,10 @@ export default function Index() {
 // Styles - MODERN UI
 // =====================
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     padding: 20,
     paddingBottom: 40,

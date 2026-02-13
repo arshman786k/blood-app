@@ -15,6 +15,7 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 // Static blood centers data (Pakistan-specific)
@@ -161,20 +162,21 @@ export default function MapScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
         <Text style={styles.title}>Blood Centers</Text>
         <Text style={styles.subtitle}>Find nearby blood banks & hospitals</Text>
       </View>
 
       {/* City Filter */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterContainer}
-        contentContainerStyle={styles.filterContent}
-      >
+      <View style={styles.filterWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContent}
+        >
         {cities.map((city) => (
           <TouchableOpacity
             key={city}
@@ -194,7 +196,8 @@ export default function MapScreen() {
             </Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+        </ScrollView>
+      </View>
 
       {/* Map View */}
       <View style={styles.mapContainer}>
@@ -327,49 +330,56 @@ export default function MapScreen() {
           </Text>
         </View>
       </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8f8f8',
   },
   header: {
     backgroundColor: '#fff',
-    padding: 20,
-    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#1a1a1a',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#666',
   },
-  filterContainer: {
+  filterWrapper: {
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   filterContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     gap: 8,
     flexDirection: 'row',
   },
   filterButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 7,
+    borderRadius: 18,
     backgroundColor: '#f8f8f8',
     marginRight: 8,
     alignSelf: 'flex-start',
@@ -387,11 +397,12 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
   mapContainer: {
-    height: 300,
-    marginBottom: 8,
+    height: 350,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
@@ -401,14 +412,14 @@ const styles = StyleSheet.create({
   },
   centerCard: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   centerCardSelected: {
     borderWidth: 2,
@@ -419,7 +430,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   typeBadge: {
     paddingHorizontal: 12,
@@ -449,15 +460,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   centerName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#1a1a1a',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   infoIcon: {
     fontSize: 16,
@@ -472,7 +483,7 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: 'row',
-    marginTop: 12,
+    marginTop: 10,
     gap: 8,
   },
   actionButton: {
@@ -518,9 +529,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#FFF3CD',
     borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
-    marginBottom: 16,
+    padding: 14,
+    marginTop: 4,
+    marginBottom: 12,
   },
   infoBoxIcon: {
     fontSize: 24,
@@ -543,9 +554,9 @@ const styles = StyleSheet.create({
   emergencyCard: {
     backgroundColor: '#FFEBEE',
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#FFCDD2',
   },

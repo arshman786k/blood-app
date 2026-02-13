@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 import { logOut } from '@/services/authService';
@@ -39,9 +40,10 @@ export default function ProfileTab() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      {/* Profile Header */}
-      <View style={styles.header}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        {/* Profile Header */}
+        <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <Text style={styles.avatarText}>
             {userData?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
@@ -109,11 +111,16 @@ export default function ProfileTab() {
         Blood Group Detector v1.0{'\n'}
         AI-Powered Blood Type Analysis
       </Text>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8f8f8',
